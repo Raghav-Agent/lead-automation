@@ -9,16 +9,40 @@ services:
     volumes:
       - ./data:/app/data
       - ./static:/app/static
+      - ./config.yaml:/app/config.yaml:ro
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - IMAP_SERVER=${IMAP_SERVER}
       - IMAP_USER=${IMAP_USER}
       - IMAP_PASSWORD=${IMAP_PASSWORD}
-      - BRAVE_API_KEY=${BRAVE_API_KEY}
+      - YELP_API_KEY=${YELP_API_KEY}
+      - AI_BASE_URL=http://openclaw-ai:9000
+    depends_on:
+      - openclaw-ai
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  openclaw-ai:
+    build: .
+    container_name: openclaw-ai
+    command: python openclaw_ai_server.py
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./.env:/app/.env:ro
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
       interval: 30s
       timeout: 10s
       retries: 3

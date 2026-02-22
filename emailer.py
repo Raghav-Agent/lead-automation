@@ -13,7 +13,7 @@ with open('config.yaml') as f:
 
 AI_PROVIDER = config['ai']['provider']
 AI_MODEL = config['ai']['model']
-AI_BASE_URL = config['ai'].get('base_url')
+AI_BASE_URL = os.getenv('AI_BASE_URL', config['ai'].get('base_url'))
 OPENAI_API_KEY = os.getenv(config['ai']['api_key_env'])
 
 def send_email(to_address, subject, body, from_address=None, smtp_server=None, smtp_port=None, password=None):
@@ -88,6 +88,19 @@ def generate_personalized_email(lead, niche):
             resp.raise_for_status()
             data = resp.json()
             body = data.get('response', '').strip()
+        elif AI_PROVIDER == 'openclaw':
+            # Call OpenClaw AI server
+            claw_url = AI_BASE_URL.rstrip('/') + '/generate'
+            payload = {
+                "prompt": user,
+                "system": system,
+                "max_tokens": 200,
+                "temperature": 0.7
+            }
+            resp = requests.post(claw_url, json=payload, timeout=30)
+            resp.raise_for_status()
+            data = resp.json()
+            body = data.get('text', '').strip()
         else:
             raise ValueError(f"Unknown AI provider: {AI_PROVIDER}")
         body = re.sub(r'\[.*?\]', '', body)

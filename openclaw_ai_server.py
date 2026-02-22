@@ -2,12 +2,12 @@
 """
 OpenClaw AI Server: Exposes an HTTP endpoint for text generation.
 The lead automation app can call this when ai.provider = 'openclaw'.
-Uses the same OpenRouter model as the assistant.
+Uses OpenRouter API to generate text.
 """
 from flask import Flask, request, jsonify
 import os
 import yaml
-from openai import OpenAI
+import requests
 
 app = Flask(__name__)
 
@@ -18,9 +18,7 @@ with open('config.yaml') as f:
 # Use OpenRouter API (optional: if no key, return placeholder)
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY') or os.getenv('OPENAI_API_KEY')
 MODEL = config['ai'].get('model', 'meta-llama/llama-3.1-8b-instruct:free')
-BASE_URL = os.getenv('AI_BASE_URL', config['ai'].get('base_url', 'https://openrouter.ai/api/v1'))
-
-client = OpenAI(api_key=OPENROUTER_API_KEY, base_url=BASE_URL)
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 @app.route('/generate', methods=['POST'])
 def generate():
@@ -47,18 +45,29 @@ def generate():
         return jsonify({'text': f"[DEMO] This is a placeholder email for '{prompt}'. Set OPENROUTER_API_KEY to enable real AI generation."})
 
     try:
-        client = OpenAI(api_key=OPENROUTER_API_KEY, base_url=BASE_URL)
-        response = client.chat.completions.create(
-            model=MODEL,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=max_tokens,
-            temperature=temperature
+        resp = requests.post(
+            OPENROUTER_URL,
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": MODEL,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": prompt}
+                ],
+                "max_tokens": max_tokens,
+                "temperature": temperature
+            },
+            timeout=30
         )
-        text = response.choices[0].message.content.strip()
+        resp.raise_for_status()
+        data = resp.json()
+        text = data['choices'][0]['message']['content'].strip()
         return jsonify({'text': text})
+    except requests.HTTPError as e:
+        return jsonify({'error': f"OpenRouter error: {e.response.status_code} {e.response.text}"}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

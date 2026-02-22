@@ -46,8 +46,8 @@ email:
 # AI settings (free options)
 ai:
   provider: "openclaw"  # "openclaw" (this server), "ollama" (local), "groq" (free tier), "openai" (paid)
-  model: "meta-llama/llama-3.1-8b-instruct:free"  # OpenRouter model; adjust for others
-  api_key_env: "OPENROUTER_API_KEY"  # env var name for API key (OPENROUTER_API_KEY or OPENAI_API_KEY)
+  model: "meta-llama/llama-3.1-8b-instruct"  # OpenRouter model (free tier available)
+  api_key_env: "OPENROUTER_API_KEY"  # env var name for API key
   base_url: "http://localhost:9000"  # OpenClaw AI server base URL (overridden by AI_BASE_URL env in Docker)
 
 # Database

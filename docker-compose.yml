@@ -36,9 +36,9 @@ services:
       - "9000:9000"
     volumes:
       - ./config.yaml:/app/config.yaml:ro
-      - ./.env:/app/.env:ro
+    env_file:
+      - .env
     environment:
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     restart: unless-stopped
     healthcheck:

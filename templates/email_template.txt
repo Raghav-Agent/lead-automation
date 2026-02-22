@@ -1,0 +1,10 @@
+Hi {{ name }},
+
+I noticed your business in the {{ niche }} space and was impressed by what you're doing.
+
+I'm building a new solution that could help you [solve a common pain point in the niche]. Would you be interested in a quick prototype to see how it works?
+
+Reply "YES" and I'll send over a link to a working demo.
+
+Best,
+Your AI Assistant

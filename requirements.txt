@@ -1,0 +1,12 @@
+openai
+requests
+beautifulsoup4
+lxml
+python-dotenv
+pyyaml
+sqlalchemy
+imap-tools
+email-validator
+jinja2
+flask
+gunicorn

@@ -1,0 +1,38 @@
+# Lead Automation Configuration
+
+# Niche to search for leads
+niche: "small businesses needing website"
+
+# Search parameters
+search:
+  engine: "brave"  # or "google"
+  results_per_query: 10
+  queries:
+    - "small business website design"
+    - "local bakery website"
+    - "restaurant online ordering"
+
+# Email settings
+email:
+  smtp_server: "smtp.gmail.com"
+  smtp_port: 587
+  from_address: "you@example.com"
+  # Use environment variables for credentials
+  # SMTP_PASSWORD or SENDGRID_API_KEY
+
+# AI settings
+ai:
+  model: "gpt-4o-mini"
+  api_key_env: "OPENAI_API_KEY"
+
+# Database
+database:
+  url: "sqlite:///data/leads.db"
+
+# Workflow intervals (seconds)
+intervals:
+  find_leads: 3600
+  send_emails: 300
+  check_replies: 300
+  generate_prototype: 60
+  converse: 60

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lead Automation Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f4f4f4; }
+    .status-prototype_sent { color: green; }
+    .status-emailed { color: blue; }
+    .status-new { color: orange; }
+    .status-replied_yes { color: purple; }
+    .status-in_conversation { color: teal; }
+    a { text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>Lead Automation Dashboard</h1>
+  <div id="leads"></div>
+  <script>
+    async function loadLeads() {
+      const resp = await fetch('/leads');
+      const leads = await resp.json();
+      const table = document.createElement('table');
+      const thead = `<thead><tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Prototype</th>
+        <th>Last Contacted</th>
+      </tr></thead>`;
+      const rows = leads.map(l => `
+        <tr>
+          <td>${l.id}</td>
+          <td>${l.name}</td>
+          <td>${l.email || ''}</td>
+          <td class="status-${l.status}">${l.status}</td>
+          <td>${l.prototype_url ? `<a href="${l.prototype_url}" target="_blank">view</a>` : '-'}</td>
+          <td>${l.last_contacted || ''}</td>
+        </tr>
+      `).join('');
+      table.innerHTML = thead + '<tbody>' + rows + '</tbody>';
+      document.getElementById('leads').innerHTML = '';
+      document.getElementById('leads').appendChild(table);
+    }
+    loadLeads();
+    setInterval(loadLeads, 10000);
+  </script>
+</body>
+</html>

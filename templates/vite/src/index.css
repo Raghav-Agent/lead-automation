@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Space+Grotesk:wght@300..700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 33% 98%;
+    --foreground: 213 27% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 213 27% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 27% 14%;
+
+    --primary: 214 62% 57%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 160 40% 94%;
+    --secondary-foreground: 160 40% 30%;
+
+    --muted: 210 25% 95%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 160 52% 58%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 20% 90%;
+    --input: 214 20% 90%;
+    --ring: 214 62% 57%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --hero-gradient: linear-gradient(135deg, hsl(214 62% 57% / 0.08), hsl(160 52% 58% / 0.06));
+    --card-shadow: 0 4px 24px -4px hsl(214 62% 57% / 0.08);
+    --card-shadow-hover: 0 8px 32px -4px hsl(214 62% 57% / 0.15);
+    --section-alt: 160 40% 97%;
+  }
+
+  .dark {
+    --background: 213 27% 8%;
+    --foreground: 210 33% 95%;
+    --card: 213 27% 12%;
+    --card-foreground: 210 33% 95%;
+    --popover: 213 27% 12%;
+    --popover-foreground: 210 33% 95%;
+    --primary: 214 62% 57%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 40% 15%;
+    --secondary-foreground: 160 40% 80%;
+    --muted: 213 27% 16%;
+    --muted-foreground: 215 16% 60%;
+    --accent: 160 52% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 213 27% 20%;
+    --input: 213 27% 20%;
+    --ring: 214 62% 57%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .section-padding {
+    @apply px-4 py-16 md:px-8 md:py-24 lg:px-16;
+  }
+  .section-alt {
+    background-color: hsl(var(--section-alt));
+  }
+  .hero-gradient {
+    background: var(--hero-gradient);
+  }
+  .card-shadow {
+    box-shadow: var(--card-shadow);
+  }
+  .card-shadow-hover {
+    box-shadow: var(--card-shadow-hover);
+  }
+}

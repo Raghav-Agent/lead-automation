@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body { font-family: sans-serif; margin: 20px; }
-    table { border-collapse: collapse; width: 100%; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     th { background: #f4f4f4; }
     .status-prototype_sent { color: green; }
@@ -15,11 +15,24 @@
     .status-in_conversation { color: teal; }
     a { text-decoration: none; }
     a:hover { text-decoration: underline; }
+    form { margin: 20px 0; padding: 10px; background: #f9f9f9; border: 1px solid #ddd; }
+    input, button { padding: 8px; margin-right: 10px; }
   </style>
 </head>
 <body>
   <h1>Lead Automation Dashboard</h1>
+
+  <h2>Sales Campaign</h2>
+  <form id="salesForm">
+    <label>Niche: <input type="text" name="niche" placeholder="e.g., dentists" required></label>
+    <label>Location: <input type="text" name="location" placeholder="e.g., New York, NY" required></label>
+    <button type="submit">Start Campaign</button>
+  </form>
+  <div id="salesStatus"></div>
+
+  <h2>Leads</h2>
   <div id="leads"></div>
+
   <script>
     async function loadLeads() {
       const resp = await fetch('/leads');
@@ -47,6 +60,29 @@
       document.getElementById('leads').innerHTML = '';
       document.getElementById('leads').appendChild(table);
     }
+
+    document.getElementById('salesForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = {
+        niche: formData.get('niche'),
+        location: formData.get('location')
+      };
+      const statusDiv = document.getElementById('salesStatus');
+      statusDiv.textContent = 'Starting campaign...';
+      try {
+        const resp = await fetch('/admin/sales', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await resp.json();
+        statusDiv.textContent = 'Campaign started: ' + JSON.stringify(result);
+      } catch (err) {
+        statusDiv.textContent = 'Error: ' + err.message;
+      }
+    });
+
     loadLeads();
     setInterval(loadLeads, 10000);
   </script>

@@ -1,0 +1,17 @@
+Hi {{ name }},
+
+I’m reaching out because I specialize in building high-converting websites for {{ niche }} like yours. I noticed your practice/business and thought you might be interested in a fresh, modern site that attracts more patients/customers.
+
+Here are a few options we offer:
+
+1. **Starter Package** – Single-page site, quick launch, great for getting online.
+2. **Professional Package** – Multi-page with booking/contact forms, SEO basics.
+3. **Premium Package** – Full custom design, advanced features, ongoing support.
+
+I’d be happy to discuss which fits your needs and budget. Would you be open to a quick chat this week?
+
+Reply “YES” and I’ll send over a few samples and a free site audit.
+
+Best,
+[Your Name]
+[Your Title/Company]

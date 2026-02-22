@@ -62,6 +62,23 @@ def run_step(step):
     else:
         return jsonify({'error': 'unknown step'}), 400
 
+@app.route('/admin/sales', methods=['POST'])
+def run_sales():
+    """
+    Trigger a sales campaign.
+    JSON body: { "niche": "dentists", "location": "New York, NY" }
+    """
+    from flask import request
+    data = request.get_json()
+    niche = data.get('niche')
+    location = data.get('location')
+    if not niche or not location:
+        return jsonify({'error': 'niche and location required'}), 400
+    from sales import run_sales_campaign
+    # Run in background? For now, run synchronously (may take time)
+    run_sales_campaign(niche, location)
+    return jsonify({'status': 'campaign started', 'niche': niche, 'location': location})
+
 @app.route('/admin/create_test_lead')
 def create_test_lead():
     from datetime import datetime

@@ -1,6 +1,6 @@
 # Lead Automation Configuration
 
-# Niche to search for leads
+# Niche to search for leads (default)
 niche: "small businesses needing website"
 
 # Search parameters
@@ -11,6 +11,17 @@ search:
     - "small business website design"
     - "local bakery website"
     - "restaurant online ordering"
+
+# Google Places API (for location-based business search)
+google_places:
+  api_key_env: "GOOGLE_PLACES_API_KEY"
+  radius: 10000  # meters (10km)
+  max_results: 20
+
+# Hunter.io API (for email enrichment)
+hunter:
+  api_key_env: "HUNTER_API_KEY"
+  max_requests_per_second: 1
 
 # Email settings
 email:

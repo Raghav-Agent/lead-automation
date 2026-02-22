@@ -64,7 +64,12 @@ def generate():
         )
         resp.raise_for_status()
         data = resp.json()
-        text = data['choices'][0]['message']['content'].strip()
+        print("OpenRouter raw response:", data)  # debug
+        message = data['choices'][0]['message']
+        text = message.get('content', '').strip()
+        if not text:
+            # Some models (e.g., stepfun) return reasoning instead of content
+            text = message.get('reasoning', '').strip()
         return jsonify({'text': text})
     except requests.HTTPError as e:
         return jsonify({'error': f"OpenRouter error: {e.response.status_code} {e.response.text}"}), 500

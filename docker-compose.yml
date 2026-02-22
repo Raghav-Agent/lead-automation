@@ -7,6 +7,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      - .:/app:ro  # mount entire codebase read-only for live updates
       - ./data:/app/data
       - ./static:/app/static
       - ./config.yaml:/app/config.yaml:ro
@@ -36,6 +37,7 @@ services:
       - "9000:9000"
     volumes:
       - ./config.yaml:/app/config.yaml:ro
+      - ./openclaw_ai_server.py:/app/openclaw_ai_server.py:ro
     env_file:
       - .env
     environment:

@@ -14,7 +14,7 @@ search:
 
 # Location-based business search (free options)
 places:
-  provider: "yelp"  # "yelp" or "osm" (OpenStreetMap Nominatim)
+  provider: "osm"  # "yelp" or "osm" (OpenStreetMap Nominatim). OSM works globally without API key.
   yelp:
     api_key_env: "YELP_API_KEY"
     radius: 10000  # meters
@@ -46,7 +46,7 @@ email:
 # AI settings (free options)
 ai:
   provider: "openclaw"  # "openclaw" (this server), "ollama" (local), "groq" (free tier), "openai" (paid)
-  model: "meta-llama/llama-3.1-8b-instruct"  # OpenRouter model (free tier available)
+  model: "stepfun/step-3.5-flash:free"  # OpenRouter free model
   api_key_env: "OPENROUTER_API_KEY"  # env var name for API key
   base_url: "http://localhost:9000"  # OpenClaw AI server base URL (overridden by AI_BASE_URL env in Docker)
 

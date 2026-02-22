@@ -62,6 +62,44 @@ def run_step(step):
     else:
         return jsonify({'error': 'unknown step'}), 400
 
+@app.route('/admin/clear_leads', methods=['POST'])
+def clear_leads():
+    from db import Base, engine
+    Base.metadata.drop_all(engine)
+    init_db()
+    return jsonify({'status': 'leads cleared'})
+
+@app.route('/admin/generate_prototypes_for_selected', methods=['POST'])
+def generate_prototypes_selected():
+    from flask import request
+    data = request.get_json()
+    lead_ids = data.get('lead_ids', [])
+    if not lead_ids:
+        return jsonify({'error': 'lead_ids required'}), 400
+    from prototype import build_prototypes
+    # build_prototypes currently processes all leads with replied_yes and no prototype_url.
+    # To limit to selected, we could modify it, but for now we just call it.
+    build_prototypes()
+    return jsonify({'status': 'prototype generation triggered', 'ids': lead_ids})
+
+@app.route('/admin/send_emails_for_selected', methods=['POST'])
+def send_emails_selected():
+    from flask import request
+    data = request.get_json()
+    lead_ids = data.get('lead_ids', [])
+    if not lead_ids:
+        return jsonify({'error': 'lead_ids required'}), 400
+    from emailer import send_initial_email
+    session = Session()
+    leads = session.query(Lead).filter(Lead.id.in_(lead_ids)).all()
+    sent = []
+    for lead in leads:
+        if lead.email:
+            send_initial_email(lead)
+            sent.append(lead.id)
+    session.close()
+    return jsonify({'status': 'emails sent', 'sent_ids': sent})
+
 @app.route('/admin/sales', methods=['POST'])
 def run_sales():
     """

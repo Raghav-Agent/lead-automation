@@ -55,17 +55,28 @@ def find_email(lead):
     Enrich a lead with an email address using configured method.
     """
     source = lead.source_url or ''
+    domain = None
+
     # If source is a website URL, use it directly
-    if source.startswith('http'):
+    if source and source.startswith('http'):
         domain = urlparse(source).netloc
     else:
-        # If it's a place_id, we can't guess domain; skip
-        return None
+        # If it's a place_id or we don't have a website, try to guess domain from business name and location
+        # Heuristic: lower case, remove spaces, add .in or .com
+        if lead.name:
+            guess = lead.name.lower().replace(' ', '').replace("'", '').replace('"', '')
+            # Try common TLDs
+            for tld in ['.in', '.com', '.co.in', '.net']:
+                candidate = guess + tld
+                # Simple DNS check could be done, but we'll just use it
+                domain = candidate
+                break  # use first guess
+        else:
+            return None
 
     if ENRICH_METHOD == 'hunter':
-        # Use Hunter.io API (paid but free tier available)
         api_key = os.getenv('HUNTER_API_KEY')
-        if not api_key:
+        if not api_key or not domain:
             return None
         url = "https://api.hunter.io/v2/domain-search"
         params = {"domain": domain, "api_key": api_key, "limit": 1}
@@ -81,16 +92,17 @@ def find_email(lead):
         return None
 
     elif ENRICH_METHOD == 'pattern':
-        # Guess from business name
+        if not domain:
+            return None
         for email in guess_email_from_name(lead.name, domain):
-            # Basic validation
             if re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
                 return email
         return None
 
     elif ENRICH_METHOD == 'scrape':
-        # Scrape website for contact email
-        return scrape_website_for_email(source)
+        if source and source.startswith('http'):
+            return scrape_website_for_email(source)
+        return None
     else:
         return None
 

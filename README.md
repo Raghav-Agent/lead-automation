@@ -11,12 +11,23 @@ You can now run targeted sales campaigns by niche and location:
 - Sends AI-personalized sales pitch with service options
 - Track replies and continue conversation
 
-## Setup
+## Setup (Free Tier)
 
-1. Copy `.env.example` to `.env` and fill in your API keys and email credentials.
-   - Required for sales: `GOOGLE_PLACES_API_KEY`, `HUNTER_API_KEY`
-   - Required for emails: `OPENAI_API_KEY`, `SMTP_PASSWORD` (or SendGrid)
-   - Required for reply monitoring: `IMAP_SERVER`, `IMAP_USER`, `IMAP_PASSWORD`
+1. Copy `.env.example` to `.env` and fill in your keys/credentials.
+   - **AI** (choose one):
+     - Local (free): Install [Ollama](https://ollama.ai), run `ollama pull llama3:8b`, set `ai.provider: ollama` in `config.yaml`. No API key needed.
+     - Groq (free tier): Set `ai.provider: groq`, get API key from https://console.groq.com, set `GROQ_API_KEY` in `.env`.
+     - OpenAI (paid): Set `ai.provider: openai`, set `OPENAI_API_KEY`.
+   - **Email sending**:
+     - Gmail (free): Enable 2FA, create app password, set `SMTP_PASSWORD`, keep `email.smtp_server=smtp.gmail.com`.
+     - SendGrid (free tier 100/day): Set `SENDGRID_API_KEY` and change `email.smtp_server` to `smtp.sendgrid.net`, `email.smtp_port=587`, `email.from_address` your verified sender.
+   - **Reply monitoring** (optional): Gmail IMAP settings (`IMAP_SERVER`, `IMAP_USER`, `IMAP_PASSWORD`).
+   - **Places search** (free):
+     - Yelp Fusion (5000/day): Set `places.provider: yelp`, get API key from https://www.yelp.com/developers, set `YELP_API_KEY`.
+     - OpenStreetMap Nominatim (free, rate-limited): Set `places.provider: osm`, no key needed. Be respectful (1 req/s).
+   - **Email enrichment** (free):
+     - Pattern guessing (default): `enrich.method: pattern` (no key).
+     - Scrape websites: `enrich.method: scrape` (no key, but may break on some sites).
 2. Install dependencies:
    ```bash
    pip install -r requirements.txt
@@ -25,7 +36,7 @@ You can now run targeted sales campaigns by niche and location:
    ```bash
    python db.py
    ```
-4. Configure `config.yaml` for your niche, email provider, and intervals.
+4. Edit `config.yaml` to set your niche, intervals, and provider choices.
 
 ## Running
 

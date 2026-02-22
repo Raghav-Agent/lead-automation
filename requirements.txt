@@ -10,5 +10,3 @@ email-validator
 jinja2
 flask
 gunicorn
-googlemaps
-hunter

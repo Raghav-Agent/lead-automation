@@ -5,13 +5,16 @@ import yaml
 import os
 from db import Session, Lead
 from datetime import datetime
-import openai
 import re
+import requests
 
 with open('config.yaml') as f:
     config = yaml.safe_load(f)
 
-openai.api_key = os.getenv('OPENAI_API_KEY')
+AI_PROVIDER = config['ai']['provider']
+AI_MODEL = config['ai']['model']
+AI_BASE_URL = config['ai'].get('base_url')
+OPENAI_API_KEY = os.getenv(config['ai']['api_key_env'])
 
 def send_email(to_address, subject, body, from_address=None, smtp_server=None, smtp_port=None, password=None):
     if not from_address:
@@ -38,34 +41,69 @@ def send_email(to_address, subject, body, from_address=None, smtp_server=None, s
         print(f"Failed to send email to {to_address}: {e}")
         return False
 
-def generate_personalized_email(lead):
-    # Use OpenAI to generate a short, personalized email based on lead's name and source
-    system = f"You are an outreach writer for a {config['niche']} service. Write a concise, friendly email (3-4 sentences) to a business. Mention something about their website or niche. End with a clear call-to-action to reply YES for a prototype."
-    user = f"Lead name: {lead.name or 'Business'}\nSource: {lead.source_url or 'Unknown'}\nNiche: {config['niche']}"
+def generate_personalized_email(lead, niche):
+    """
+    Generate a personalized email using configured AI provider.
+    """
+    system = f"You are an outreach writer for a {niche} service. Write a concise, friendly email (3-4 sentences) to a business. Mention something about their business. End with a clear call-to-action to reply YES for a free audit."
+    user = f"Business name: {lead.name or 'Business'}\nNiche: {niche}"
     try:
-        response = openai.chat.completions.create(
-            model=config['ai']['model'],
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user}
-            ],
-            max_tokens=200,
-            temperature=0.7
-        )
-        body = response.choices[0].message.content.strip()
-        # Ensure body doesn't have placeholders
+        if AI_PROVIDER == 'openai':
+            import openai
+            openai.api_key = OPENAI_API_KEY
+            response = openai.chat.completions.create(
+                model=AI_MODEL,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user}
+                ],
+                max_tokens=200,
+                temperature=0.7
+            )
+            body = response.choices[0].message.content.strip()
+        elif AI_PROVIDER == 'groq':
+            # Use Groq API (compatible with OpenAI client)
+            from openai import OpenAI
+            client = OpenAI(api_key=OPENAI_API_KEY, base_url="https://api.groq.com/openai/v1")
+            response = client.chat.completions.create(
+                model=AI_MODEL,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user}
+                ],
+                max_tokens=200,
+                temperature=0.7
+            )
+            body = response.choices[0].message.content.strip()
+        elif AI_PROVIDER == 'ollama':
+            # Use local Ollama
+            ollama_url = AI_BASE_URL.rstrip('/') + '/api/generate'
+            payload = {
+                "model": AI_MODEL,
+                "prompt": f"{system}\n\n{user}",
+                "stream": False,
+                "options": {"num_predict": 200}
+            }
+            resp = requests.post(ollama_url, json=payload, timeout=30)
+            resp.raise_for_status()
+            data = resp.json()
+            body = data.get('response', '').strip()
+        else:
+            raise ValueError(f"Unknown AI provider: {AI_PROVIDER}")
         body = re.sub(r'\[.*?\]', '', body)
         subject = f"Quick question about {lead.name or 'your business'}"
         return subject, body
     except Exception as e:
-        print(f"OpenAI email generation failed: {e}")
-        # Fallback to template
-        subject = f"Quick question about your {config['niche']}"
-        body = f"Hi {lead.name or 'there'},\n\nI noticed your business in the {config['niche']} space and was impressed.\n\nI'm building a new solution that could help you. Would you be interested in a quick prototype to see how it works?\n\nReply \"YES\" and I'll send over a link to a working demo.\n\nBest,\nYour AI Assistant"
+        print(f"AI email generation failed ({AI_PROVIDER}): {e}")
+        # Fallback template
+        subject = f"Boost your {niche} business with a modern website"
+        body = f"Hi {lead.name or 'there'},\n\nI noticed your business in the {niche} space. I specialize in building high-converting websites for {niche} like yours.\n\nI'd be happy to discuss how a new website can attract more customers. Would you be open to a quick chat this week?\n\nReply \"YES\" for a free site audit.\n\nBest,\nYour AI Assistant"
         return subject, body
 
-def send_initial_email(lead):
-    subject, body = generate_personalized_email(lead)
+def send_initial_email(lead, niche=None):
+    if not niche:
+        niche = config['niche']
+    subject, body = generate_personalized_email(lead, niche)
     success = send_email(lead.email, subject, body)
     session = Session()
     if success:

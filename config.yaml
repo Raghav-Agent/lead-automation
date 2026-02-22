@@ -12,16 +12,28 @@ search:
     - "local bakery website"
     - "restaurant online ordering"
 
-# Google Places API (for location-based business search)
-google_places:
-  api_key_env: "GOOGLE_PLACES_API_KEY"
-  radius: 10000  # meters (10km)
-  max_results: 20
+# Location-based business search (free options)
+places:
+  provider: "yelp"  # "yelp" or "osm" (OpenStreetMap Nominatim)
+  yelp:
+    api_key_env: "YELP_API_KEY"
+    radius: 10000  # meters
+    max_results: 20
+  osm:
+    user_agent: "lead-automation-bot/1.0"
+    timeout: 10
+    max_results: 20
 
-# Hunter.io API (for email enrichment)
-hunter:
-  api_key_env: "HUNTER_API_KEY"
-  max_requests_per_second: 1
+# Email enrichment (free)
+enrich:
+  method: "pattern"  # "pattern" or "scrape" or "hunter" (if you have key)
+  patterns:
+    - "{first}@{domain}"
+    - "{first}.{last}@{domain}"
+    - "{first}{last}@{domain}"
+    - "info@{domain}"
+    - "contact@{domain}"
+  scrape_timeout: 10
 
 # Email settings
 email:
@@ -29,12 +41,14 @@ email:
   smtp_port: 587
   from_address: "you@example.com"
   # Use environment variables for credentials
-  # SMTP_PASSWORD or SENDGRID_API_KEY
+  # SMTP_PASSWORD (Gmail app password) or SENDGRID_API_KEY
 
-# AI settings
+# AI settings (free options)
 ai:
-  model: "gpt-4o-mini"
-  api_key_env: "OPENAI_API_KEY"
+  provider: "ollama"  # "ollama" (local) or "openai" (paid) or "groq" (free tier)
+  model: "llama3:8b"  # for Ollama; adjust for others
+  api_key_env: "OPENAI_API_KEY"  # or GROQ_API_KEY
+  base_url: "http://localhost:11434"  # Ollama default; change for others
 
 # Database
 database:

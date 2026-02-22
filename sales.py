@@ -5,35 +5,10 @@ from datetime import datetime
 from place_finder import find_leads_by_location
 from enricher import enrich_leads
 from emailer import send_initial_email
-import openai
+import time
 
 with open('config.yaml') as f:
     config = yaml.safe_load(f)
-
-openai.api_key = os.getenv('OPENAI_API_KEY')
-
-def generate_sales_email(lead, niche):
-    """
-    Generate a personalized sales email using OpenAI.
-    """
-    system = f"You are a sales consultant for a web design agency targeting {niche}. Write a concise, friendly email (4-5 sentences) with three package options (Starter, Professional, Premium) and a clear CTA to reply YES for a free audit."
-    user = f"Business name: {lead.name}\nNiche: {niche}"
-    try:
-        response = openai.chat.completions.create(
-            model=config['ai']['model'],
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user}
-            ],
-            max_tokens=300,
-            temperature=0.7
-        )
-        body = response.choices[0].message.content.strip()
-        subject = f"Boost your {niche} business with a modern website"
-        return subject, body
-    except Exception as e:
-        print(f"OpenAI error: {e}")
-        return None, None
 
 def run_sales_campaign(niche, location):
     """
@@ -54,14 +29,9 @@ def run_sales_campaign(niche, location):
     ).all()
     print(f"Sending emails to {len(leads)} leads")
     for lead in leads:
-        # Generate personalized email
-        subject, body = generate_sales_email(lead, niche)
-        if not subject:
-            # Fallback to template
-            from emailer import template_env
-            template = template_env.get_template('sales_email.txt')
-            body = template.render(name=lead.name, niche=niche)
-            subject = f"Boost your {niche} business with a modern website"
+        # Use emailer's AI to generate personalized sales email
+        from emailer import generate_personalized_email
+        subject, body = generate_personalized_email(lead, niche)
         # Send
         from emailer import send_email
         success = send_email(lead.email, subject, body)

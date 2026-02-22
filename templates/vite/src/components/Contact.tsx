@@ -1,7 +1,12 @@
 import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
+import { useConfig } from "@/contexts/ConfigContext";
 
 const Contact = () => {
+  const config = useConfig();
+  const phone = config?.phone;
+  const email = config?.business_name ? `contact@${config.business_name.toLowerCase().replace(/\s+/g, '')}.com` : "hello@brightsmile.com";
+
   return (
     <section id="contact" className="section-padding">
       <div className="max-w-7xl mx-auto">
@@ -42,7 +47,13 @@ const Contact = () => {
               </div>
               <div>
                 <h3 className="font-heading font-semibold text-foreground mb-1">Phone</h3>
-                <p className="text-muted-foreground text-sm">(555) 123-4567</p>
+                <p className="text-muted-foreground text-sm">
+                  {phone ? (
+                    <a href={`tel:${phone}`} className="hover:underline">{phone}</a>
+                  ) : (
+                    "(555) 123-4567"
+                  )}
+                </p>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -51,7 +62,7 @@ const Contact = () => {
               </div>
               <div>
                 <h3 className="font-heading font-semibold text-foreground mb-1">Email</h3>
-                <p className="text-muted-foreground text-sm">hello@brightsmile.com</p>
+                <p className="text-muted-foreground text-sm">{email}</p>
               </div>
             </div>
             <div className="flex items-start gap-4">

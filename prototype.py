@@ -49,14 +49,28 @@ def generate_prototype(lead):
     config_data = {
         "business_name": lead.name or "Your Business",
         "niche": config.get('niche', ''),
-        "lead_id": lead.id
+        "lead_id": lead.id,
+        "phone": lead.phone
     }
     with open(os.path.join(output_dir, 'config.json'), 'w') as f:
         import json
         json.dump(config_data, f, indent=2)
 
-    # GitHub Pages URL
-    url = f"https://raghav-prof.github.io/lead-automation/lead_{lead.id}/"
+    # Determine GitHub Pages URL from git remote
+    try:
+        remote_url = subprocess.check_output(['git', 'config', '--get', 'remote.origin.url'], cwd=DOCS_DIR).decode().strip()
+        # Example: https://github.com/Raghav-Agent/lead-automation.git
+        # Extract owner and repo
+        import re
+        m = re.search(r'github\.com[:/]([^/]+)/([^/]+?)(?:\.git)?$', remote_url)
+        if m:
+            owner = m.group(1)
+            repo = m.group(2)
+            url = f"https://{owner}.github.io/{repo}/lead_{lead.id}/"
+        else:
+            url = f"https://raghav-agent.github.io/lead-automation/lead_{lead.id}/"
+    except Exception:
+        url = f"https://raghav-agent.github.io/lead-automation/lead_{lead.id}/"
     return url
 
 def build_prototypes():

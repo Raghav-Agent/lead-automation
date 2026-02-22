@@ -59,6 +59,10 @@ def run_step(step):
     elif step == 'converse':
         handle_conversation()
         return jsonify({'status': 'ran handle_conversation'})
+    elif step == 'enrich_leads':
+        from enrichment_agent import enrich_pending_leads
+        count = enrich_pending_leads()
+        return jsonify({'status': 'ran enrich_leads', 'processed': count})
     else:
         return jsonify({'error': 'unknown step'}), 400
 

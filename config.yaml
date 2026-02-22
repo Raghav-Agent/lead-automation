@@ -1,60 +1,41 @@
-# Lead Automation Configuration
-
-# Niche to search for leads (default)
-niche: "small businesses needing website"
-
-# Search parameters
+niche: small businesses needing website
 search:
-  engine: "brave"  # or "google"
+  engine: brave
   results_per_query: 10
   queries:
-    - "small business website design"
-    - "local bakery website"
-    - "restaurant online ordering"
-
-# Location-based business search (free options)
+  - small business website design
+  - local bakery website
+  - restaurant online ordering
 places:
-  provider: "osm"  # "yelp" or "osm" (OpenStreetMap Nominatim). OSM works globally without API key.
+  provider: osm
   yelp:
-    api_key_env: "YELP_API_KEY"
-    radius: 10000  # meters
+    api_key_env: YELP_API_KEY
+    radius: 10000
     max_results: 20
   osm:
-    user_agent: "lead-automation-bot/1.0"
+    user_agent: lead-automation-bot/1.0
     timeout: 10
     max_results: 20
-
-# Email enrichment (free)
 enrich:
-  method: "pattern"  # "pattern" or "scrape" or "hunter" (if you have key)
+  method: pattern
   patterns:
-    - "{first}@{domain}"
-    - "{first}.{last}@{domain}"
-    - "{first}{last}@{domain}"
-    - "info@{domain}"
-    - "contact@{domain}"
+  - '{first}@{domain}'
+  - '{first}.{last}@{domain}'
+  - '{first}{last}@{domain}'
+  - info@{domain}
+  - contact@{domain}
   scrape_timeout: 10
-
-# Email settings
 email:
-  smtp_server: "smtp.gmail.com"
+  smtp_server: smtp.gmail.com
   smtp_port: 587
-  from_address: "you@example.com"
-  # Use environment variables for credentials
-  # SMTP_PASSWORD (Gmail app password) or SENDGRID_API_KEY
-
-# AI settings (free options)
+  from_address: you@example.com
 ai:
-  provider: "openclaw"  # "openclaw" (this server), "ollama" (local), "groq" (free tier), "openai" (paid)
-  model: "stepfun/step-3.5-flash:free"  # OpenRouter free model
-  api_key_env: "OPENROUTER_API_KEY"  # env var name for API key
-  base_url: "http://localhost:9000"  # OpenClaw AI server base URL (overridden by AI_BASE_URL env in Docker)
-
-# Database
+  provider: openclaw
+  model: stepfun/step-3.5-flash:free
+  api_key_env: OPENROUTER_API_KEY
+  base_url: http://localhost:9000
 database:
-  url: "sqlite:///data/leads.db"
-
-# Workflow intervals (seconds)
+  url: sqlite:///leads.db
 intervals:
   find_leads: 3600
   send_emails: 300

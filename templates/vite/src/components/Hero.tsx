@@ -5,6 +5,7 @@ import { useConfig } from "@/contexts/ConfigContext";
 const Hero = () => {
   const config = useConfig();
   const businessName = config?.business_name || "Bright Smile Dental";
+  const phone = config?.phone;
 
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden">
@@ -43,13 +44,15 @@ const Hero = () => {
             >
               Book an Appointment
             </a>
-            <a
-              href="#services"
-              className="border border-card/30 backdrop-blur-sm px-8 py-3.5 rounded-lg font-semibold text-center hover:bg-card/10 transition-colors"
-              style={{ color: 'hsl(0 0% 100%)' }}
-            >
-              Our Services
-            </a>
+            {phone && (
+              <a
+                href={`tel:${phone}`}
+                className="border border-card/30 backdrop-blur-sm px-8 py-3.5 rounded-lg font-semibold text-center hover:bg-card/10 transition-colors"
+                style={{ color: 'hsl(0 0% 100%)' }}
+              >
+                Call {phone}
+              </a>
+            )}
           </div>
         </motion.div>
       </div>

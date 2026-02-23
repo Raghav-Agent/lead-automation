@@ -1,0 +1,123 @@
+.dashboard .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.stat-card {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+}
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #2563eb;
+}
+.stat-label {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+.leads-container {
+  overflow-x: auto;
+}
+.leads-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+.leads-table th,
+.leads-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+.leads-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #475569;
+}
+.leads-table tr:hover {
+  background: #f8fafc;
+}
+.lead-name {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+.lead-name:hover {
+  text-decoration: underline;
+}
+.contact-info .phone {
+  color: #16a34a;
+  font-weight: 500;
+}
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.badge-new { background: #dbeafe; color: #1e40af; }
+.badge-contacted { background: #fef3c7; color: #92400e; }
+.badge-website_created { background: #dcfce7; color: #166534; }
+.badge-success { background: #dcfce7; color: #166534; }
+.btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+.btn-primary {
+  background: #2563eb;
+  color: white;
+}
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+.btn-secondary {
+  background: #64748b;
+  color: white;
+}
+.btn-secondary:hover {
+  background: #475569;
+}
+.btn-small {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+}
+.btn-email {
+  background: #f59e0b;
+  color: white;
+}
+.btn-create {
+  background: #10b981;
+  color: white;
+}
+.btn-view {
+  background: #3b82f6;
+  color: white;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.muted {
+  color: #94a3b8;
+  font-size: 0.875rem;
+}

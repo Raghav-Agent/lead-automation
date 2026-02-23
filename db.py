@@ -29,12 +29,21 @@ class Lead(Base):
     address = Column(String)
     source_url = Column(String)
     niche = Column(String)
-    status = Column(String, default='new')  # new, emailed, replied_yes, replied_no, in_conversation, prototype_sent, converted, dead
+    business_type = Column(String)
+    business_name = Column(String)
+    location = Column(String)
+    website_url = Column(String)
+    email_sent = Column(Boolean, default=False)
+    email_sent_date = Column(DateTime)
+    prototype_created = Column(Boolean, default=False)
+    prototype_url = Column(String)
+    status = Column(String, default='new')  # new, contacted, qualified, website_created
+    notes = Column(String)
     last_contacted = Column(DateTime)
     reply_count = Column(Integer, default=0)
     conversation_history = Column(JSON, default=list)
-    prototype_url = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
 
 def init_db():
     Base.metadata.create_all(engine)

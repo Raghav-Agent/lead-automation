@@ -18,16 +18,12 @@ BRAVE_API_KEY = os.getenv('BRAVE_API_KEY')
 PATTERNS = config['enrich']['patterns']
 
 def guess_email_from_name(name, domain):
-    if not name or not domain:
-        return None
-    parts = name.lower().replace('.', '').split()
-    if not parts:
-        return None
-    first = parts[0]
-    last = parts[-1] if len(parts) > 1 else ''
-    for pattern in PATTERNS:
-        email = pattern.format(first=first, last=last, domain=domain)
-        yield email
+    """
+    Removed: we do not want to generate fake emails.
+    This function is kept stubbed to avoid breaking imports but returns nothing.
+    """
+    return []
+    yield  # unreachable
 
 def extract_phone_from_text(text):
     phones = re.findall(r'(?:\+?91)?[6-9]\d{9}', text)
@@ -96,12 +92,15 @@ def search_brave_for_contact(business_name, location_hint=None):
 def scrape_website(url):
     """
     Scrape a website for email and phone.
+    Tries simple requests first; if that fails or yields no contact info, uses Playwright (headless Chromium).
     """
+    # First try simple requests
     try:
         resp = requests.get(url, timeout=10)
         if resp.status_code == 200:
             html = resp.text
             emails = re.findall(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', html)
+            phone = extract_phone_from_text(html)
             email = None
             if emails:
                 for e in emails:
@@ -110,8 +109,31 @@ def scrape_website(url):
                         break
                 if not email:
                     email = emails[0]
-            phone = extract_phone_from_text(html)
-            return email, phone
+            if email or phone:
+                return email, phone
+    except Exception:
+        pass
+
+    # Fallback to Playwright for JS-rendered pages
+    try:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(url, timeout=15000)
+            html = page.content()
+            browser.close()
+        emails = re.findall(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', html)
+        phone = extract_phone_from_text(html)
+        email = None
+        if emails:
+            for e in emails:
+                if 'contact' in e or 'info' in e or 'hello' in e:
+                    email = e
+                    break
+            if not email:
+                email = emails[0]
+        return email, phone
     except Exception:
         pass
     return None, None
@@ -147,19 +169,7 @@ def enrich_lead(lead):
             lead.address = addr
             updated = True
 
-    # If still no email, try domain guessing from business name
-    if not lead.email:
-        domain = None
-        if lead.source_url and lead.source_url.startswith('http'):
-            domain = urlparse(lead.source_url).netloc
-        else:
-            guess = lead.name.lower().replace(' ', '').replace("'", '').replace('"', '')
-            domain = guess + '.in'  # default to .in for India
-        for email in guess_email_from_name(lead.name, domain):
-            lead.email = email
-            updated = True
-            break
-
+    # Do NOT guess emails. Only use verified ones from scraping or search.
     return updated
 
 def enrich_pending_leads():

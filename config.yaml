@@ -1,11 +1,9 @@
-niche: small businesses needing website
+niche: dental clinics
+location: Mumbai, India
 search:
   engine: brave
   results_per_query: 10
-  queries:
-  - small business website design
-  - local bakery website
-  - restaurant online ordering
+  queries: []
 places:
   provider: osm
   yelp:

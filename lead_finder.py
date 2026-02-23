@@ -1,77 +1,97 @@
 import requests
-from bs4 import BeautifulSoup
 import yaml
-import os
+import time
 from db import Session, Lead
 from datetime import datetime
-import time
 
 with open('config.yaml') as f:
     config = yaml.safe_load(f)
 
-BRAVE_API_KEY = os.getenv('BRAVE_API_KEY')
+PLACES_PROVIDER = config['places']['provider']
+OSM_USER_AGENT = config['places']['osm']['user_agent']
+OSM_MAX_RESULTS = config['places']['osm']['max_results']
 
-def search_brave_api(query, count=10):
-    url = "https://api.search.brave.com/res/v1/web/search"
-    headers = {
-        "Accept": "application/json",
-        "X-Subscription-Token": BRAVE_API_KEY
-    }
+def search_osm(query, lat=None, lon=None, radius=10000):
+    """
+    Use OpenStreetMap Nominatim to find businesses.
+    For free-form queries, use 'q' parameter. For bounded search, use viewbox.
+    """
+    url = "https://nominatim.openstreetmap.org/search"
     params = {
         "q": query,
-        "count": count
+        "format": "json",
+        "limit": OSM_MAX_RESULTS,
+        "addressdetails": 1,
+        "extratags": 1
     }
-    resp = requests.get(url, headers=headers, params=params)
-    resp.raise_for_status()
-    data = resp.json()
+    if lat and lon:
+        params["viewbox"] = f"{lon-0.1},{lat-0.1},{lon+0.1},{lat+0.1}"
+        params["bounded"] = 1
+    headers = {"User-Agent": OSM_USER_AGENT}
+    try:
+        resp = requests.get(url, params=params, headers=headers, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:
+        print(f"OSM request failed: {e}")
+        return []
     results = []
-    for web in data.get('web', {}).get('results', []):
-        results.append({"title": web.get('title'), "url": web.get('url'), "description": web.get('description')})
-    return results
-
-def search_brave_scrape(query, count=10):
-    url = "https://search.brave.com/search"
-    params = {"q": query, "count": count}
-    headers = {"User-Agent": "Mozilla/5.0"}
-    resp = requests.get(url, params=params, headers=headers)
-    soup = BeautifulSoup(resp.text, 'lxml')
-    results = []
-    for result in soup.select('.snippet'):
-        title = result.select_one('.title')
-        link = result.select_one('a')
-        if title and link:
-            results.append({"title": title.text.strip(), "url": link['href']})
+    for place in data:
+        name = place.get('name')
+        if not name:
+            # Fallback: use first part of display_name
+            display = place.get('display_name', '')
+            name = display.split(',')[0] if display else 'Unknown'
+        address = place.get('display_name')
+        website = None
+        if isinstance(place.get('extratags'), dict):
+            website = place['extratags'].get('website')
+        results.append({
+            "name": name,
+            "address": address,
+            "website": website,
+            "osm_id": place.get('osm_id')
+        })
     return results
 
 def find_leads():
     session = Session()
-    queries = config['search']['queries']
+    # Build queries: if search.queries is empty, generate from niche + location
+    base_queries = config['search'].get('queries', [])
+    location = config.get('location')
+    niche = config['niche']
+    if not base_queries:
+        if location:
+            base_queries = [f"{niche} in {location}"]
+        else:
+            base_queries = [niche]
+    queries = base_queries
     for q in queries:
-        print(f"Searching: {q}")
+        print(f"Finding leads for: {q}")
         try:
-            if BRAVE_API_KEY:
-                results = search_brave_api(q, config['search']['results_per_query'])
-            else:
-                results = search_brave_scrape(q, config['search']['results_per_query'])
+            results = search_osm(q)
         except Exception as e:
-            print(f"Search error for '{q}': {e}")
+            import traceback
+            traceback.print_exc()
             results = []
+        print(f"Found {len(results)} results")
         for r in results:
-            name = r['title'].split()[0] if r['title'] else "Business"
-            email = None  # Could use hunter.io or similar
-            existing = session.query(Lead).filter_by(source_url=r['url']).first()
+            # Avoid duplicates by name+address or source_url
+            existing = session.query(Lead).filter_by(name=r['name'], address=r['address']).first()
             if not existing:
                 lead = Lead(
-                    name=name,
-                    email=email,
-                    source_url=r['url'],
-                    niche=config['niche'],
+                    name=r['name'],
+                    email=None,
+                    phone=None,
+                    address=r['address'],
+                    source_url=r.get('website') or '',
+                    niche=niche,
                     status='new',
                     created_at=datetime.utcnow()
                 )
                 session.add(lead)
         session.commit()
-        time.sleep(1)
+        time.sleep(1)  # be polite to OSM
     session.close()
     print("Lead finding complete.")
 

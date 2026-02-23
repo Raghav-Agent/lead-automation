@@ -26,6 +26,7 @@ class Lead(Base):
     name = Column(String)
     email = Column(String, unique=True)
     phone = Column(String)
+    address = Column(String)
     source_url = Column(String)
     niche = Column(String)
     status = Column(String, default='new')  # new, emailed, replied_yes, replied_no, in_conversation, prototype_sent, converted, dead

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import axios from 'axios'
 import { Link, useParams } from 'react-router-dom'
@@ -32,8 +33,9 @@ export default function Dashboard() {
   const { data: stats } = useQuery<DashboardStats>('dashboard-stats', () =>
     axios.get(`${API_URL}/dashboard/stats`).then(res => res.data)
   )
-  const { data: leadsData } = useQuery('leads', () =>
-    axios.get(`${API_URL}/leads?limit=100`).then(res => res.data)
+  const [filters, setFilters] = useState({ niche: '', location: '' })
+  const { data: leadsData } = useQuery(['leads', filters], () =>
+    axios.get(`${API_URL}/leads?limit=100${filters.niche ? `&niche=${filters.niche}` : ''}${filters.location ? `&location=${filters.location}` : ''}`).then(res => res.data)
   )
 
   const sendEmailMutation = useMutation(
@@ -86,6 +88,22 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Filters */}
+      <div className="filters">
+        <input
+          type="text"
+          placeholder="Filter by niche..."
+          value={filters.niche}
+          onChange={(e) => setFilters({ ...filters, niche: e.target.value })}
+        />
+        <input
+          type="text"
+          placeholder="Filter by location..."
+          value={filters.location}
+          onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+        />
+      </div>
 
       {/* Leads Table */}
       <div className="leads-container">

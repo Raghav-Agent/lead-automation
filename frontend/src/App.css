@@ -1,36 +1,13 @@
-.app {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-.nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin-bottom: 2rem;
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f7fa;
+  color: #333;
 }
-.nav-brand {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #2563eb;
-  text-decoration: none;
-}
-.nav-links a {
-  margin-left: 1.5rem;
-  text-decoration: none;
-  color: #555;
-  font-weight: 500;
-}
-.nav-links a:hover {
-  color: #2563eb;
-}
-.main {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  padding: 2rem;
+#root {
+  min-height: 100vh;
 }

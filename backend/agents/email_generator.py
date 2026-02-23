@@ -5,6 +5,9 @@ from typing import Tuple
 import os
 from db import Session, Lead
 from services.database import EmailCampaignService
+from .ai_client import ai_client
+import json
+import re
 
 class EmailGeneratorAgent:
     def __init__(self):
@@ -14,27 +17,25 @@ class EmailGeneratorAgent:
         self.sender_password = os.getenv('SENDER_PASSWORD')
 
     def generate_personalized_email(self, lead: Lead, website_url: str) -> Tuple[str, str]:
-        """Generate email subject and body using simple templates (no LLM required)."""
+        """Generate email subject and body using AI."""
         business_name = lead.business_name or lead.name
         niche = lead.niche
-        subject = f"Professional {niche} website for {business_name}"
-        body = f"""Hi {business_name} team,
-
-I noticed {business_name} is a trusted {niche} in {lead.location}. I specialize in building modern, conversion-focused websites for {niche} businesses like yours.
-
-I've put together a quick prototype that could work for you: {website_url}
-
-Having a professional website helps you:
-- Attract more customers online
-- Build credibility and trust
-- Showcase your services 24/7
-
-Would you be interested in seeing a custom design for your business? I can have a draft ready within 48 hours.
-
-Best regards,
-[Your Name]
-Freelance Web Developer
-"""
+        location = lead.location
+        prompt = f"""Write a persuasive, personalized email to a {niche} business called "{business_name}" in {location}.
+Include a link to their website prototype: {website_url}
+Keep it concise, professional, and focused on benefits. End with a clear call-to-action.
+Format:
+SUBJECT: <subject line>
+BODY: <email body>"""
+        response = ai_client.generate(prompt, max_tokens=300)
+        # Parse subject and body
+        if "BODY:" in response:
+            parts = response.split("BODY:")
+            subject = parts[0].replace("SUBJECT:", "").strip()
+            body = parts[1].strip()
+        else:
+            subject = f"Professional {niche} website for {business_name}"
+            body = response
         return subject, body
 
     async def send_email(self, to_email: str, subject: str, body: str, lead_id: int, session: Session) -> bool:

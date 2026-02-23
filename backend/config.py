@@ -5,8 +5,7 @@ load_dotenv()
 
 class Settings:
     # API Keys
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+    OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
     BRAVE_API_KEY = os.getenv("BRAVE_API_KEY")
 
     # Database
@@ -24,5 +23,9 @@ class Settings:
 
     # Website Builder
     WEBSITE_OUTPUT_PATH = os.getenv("WEBSITE_OUTPUT_PATH", "./generated_sites")
+    VITE_DIST_PATH = os.getenv("VITE_DIST_PATH", "../templates/vite/dist")  # path to built React app
+
+    # AI Server (OpenClaw with OpenRouter)
+    AI_SERVER_URL = os.getenv("AI_SERVER_URL", "http://localhost:9000")
 
 settings = Settings()

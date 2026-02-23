@@ -26,7 +26,7 @@ class LeadSearchQuery(SQLModel):
     niche: str
     location: str
     business_type: Optional[str] = None
-    radius_km: int = 50
+    radius_km: int = 50  # in kilometers; will be converted to bounding box if possible
 
 class EmailCampaign(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

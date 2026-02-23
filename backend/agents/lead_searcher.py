@@ -16,7 +16,31 @@ class LeadSearcherAgent:
     def __init__(self):
         pass
 
-    def search_osm(self, query: str) -> List[dict]:
+    def geocode_location(self, location: str) -> Optional[dict]:
+        """Get lat/lon for a location string using Nominatim."""
+        url = "https://nominatim.openstreetmap.org/search"
+        params = {
+            "q": location,
+            "format": "json",
+            "limit": 1,
+            "addressdetails": 1
+        }
+        headers = {"User-Agent": config['places']['osm']['user_agent']}
+        try:
+            resp = requests.get(url, params=params, headers=headers, timeout=10)
+            resp.raise_for_status()
+            data = resp.json()
+            if data:
+                place = data[0]
+                return {
+                    "lat": float(place['lat']),
+                    "lon": float(place['lon'])
+                }
+        except Exception as e:
+            print(f"Geocoding error for '{location}': {e}")
+        return None
+
+    def search_osm(self, query: str, radius_km: int = 50, center_lat: float = None, center_lon: float = None) -> List[dict]:
         """Search OpenStreetMap Nominatim for businesses."""
         url = "https://nominatim.openstreetmap.org/search"
         params = {
@@ -26,6 +50,13 @@ class LeadSearcherAgent:
             "addressdetails": 1,
             "extratags": 1
         }
+        if center_lat is not None and center_lon is not None:
+            # Create a bounding box roughly radius_km around center
+            # 1 degree ≈ 111 km
+            delta = radius_km / 111.0
+            viewbox = f"{center_lon-delta},{center_lat-delta},{center_lon+delta},{center_lat+delta}"
+            params["viewbox"] = viewbox
+            params["bounded"] = 1
         headers = {"User-Agent": config['places']['osm']['user_agent']}
         try:
             resp = requests.get(url, params=params, headers=headers, timeout=10)
@@ -77,12 +108,17 @@ class LeadSearcherAgent:
             print(f"Brave search error: {e}")
             return []
 
-    async def generate_leads(self, niche: str, location: str, business_type: str = None) -> List[Lead]:
+    async def generate_leads(self, niche: str, location: str, business_type: str = None, radius_km: int = 50) -> List[Lead]:
         """Generate leads from OSM and Brave search."""
         all_leads = []
+        # Geocode location to get center coordinates for radius search
+        center = self.geocode_location(location)
+        center_lat = center['lat'] if center else None
+        center_lon = center['lon'] if center else None
+
         # OSM query
         osm_query = f"{niche} in {location}"
-        osm_results = self.search_osm(osm_query)
+        osm_results = self.search_osm(osm_query, radius_km=radius_km, center_lat=center_lat, center_lon=center_lon)
         for r in osm_results:
             lead = Lead(
                 name=r['name'],

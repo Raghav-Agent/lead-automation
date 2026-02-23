@@ -29,16 +29,18 @@ export default function LeadDetails() {
       onSuccess: () => {
         queryClient.invalidateQueries(['lead', leadId])
         queryClient.invalidateQueries('leads')
+        alert('Email sent!')
       }
     }
   )
 
   const createWebsiteMutation = useMutation(
-    (template_type: string) => axios.post(`${API_URL}/websites/create/${leadId}?template_type=${template_type}`),
+    () => axios.post(`${API_URL}/websites/create/${leadId}?template_type=modern`),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['lead', leadId])
         queryClient.invalidateQueries('leads')
+        alert('Website creation started!')
       }
     }
   )
@@ -51,89 +53,90 @@ export default function LeadDetails() {
 
   return (
     <div className="lead-details">
-      <div className="header">
-        <button className="back-btn" onClick={() => navigate('/')}>← Back to Dashboard</button>
-        <h1>{lead.business_name}</h1>
-        <span className={`badge badge-${lead.status}`}>{lead.status}</span>
-      </div>
-
+      <button onClick={() => navigate('/')} className="btn btn-back">← Back to Dashboard</button>
       <div className="details-grid">
-        <section className="card">
-          <h2>Contact Information</h2>
-          <p><strong>Name:</strong> {lead.name}</p>
-          <p><strong>Email:</strong> {lead.email || <em>None</em>}</p>
-          <p><strong>Phone:</strong> {lead.phone || <em>None</em>}</p>
-          <p><strong>Address:</strong> {lead.address || <em>None</em>}</p>
-          <p><strong>Location:</strong> {lead.location}</p>
-          <p><strong>Website:</strong> {lead.website_url || <em>None</em>}</p>
-          <p><strong>Business Type:</strong> {lead.business_type}</p>
-          <p><strong>Niche:</strong> {lead.niche}</p>
-        </section>
-
-        <section className="card">
-          <h2>Actions</h2>
-          <div className="actions">
-            {lead.email ? (
-              <button
-                className="btn btn-primary"
-                onClick={() => sendEmailMutation.mutate()}
-                disabled={sendEmailMutation.isLoading || lead.email_sent}
-              >
-                {sendEmailMutation.isLoading ? 'Sending...' : lead.email_sent ? '✓ Email Sent' : '📧 Send Pitch Email'}
-              </button>
-            ) : (
-              <p className="muted">No email address available</p>
-            )}
-            {lead.prototype_created && websites.length > 0 ? (
-              <a href={`http://localhost:8000${lead.prototype_url}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
-                🌐 View Website
-              </a>
-            ) : (
-              <div>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => createWebsiteMutation.mutate('modern')}
-                  disabled={createWebsiteMutation.isLoading}
-                >
-                  {createWebsiteMutation.isLoading ? 'Building...' : '🌐 Create Website'}
-                </button>
-              </div>
-            )}
+        {/* Lead Info */}
+        <div className="card">
+          <h2>Lead Information</h2>
+          <div className="info-grid">
+            <div>
+              <label>Name:</label>
+              <p>{lead.name}</p>
+            </div>
+            <div>
+              <label>Business:</label>
+              <p>{lead.business_name}</p>
+            </div>
+            <div>
+              <label>Email:</label>
+              <p><a href={`mailto:${lead.email}`}>{lead.email || 'N/A'}</a></p>
+            </div>
+            <div>
+              <label>Phone:</label>
+              <p>{lead.phone ? <a href={`tel:${lead.phone}`}>{lead.phone}</a> : 'N/A'}</p>
+            </div>
+            <div>
+              <label>Niche:</label>
+              <p>{lead.niche}</p>
+            </div>
+            <div>
+              <label>Location:</label>
+              <p>{lead.location}</p>
+            </div>
+            <div>
+              <label>Status:</label>
+              <p><span className={`badge badge-${lead.status}`}>{lead.status}</span></p>
+            </div>
           </div>
-        </section>
+        </div>
 
-        {emails.length > 0 && (
-          <section className="card full-width">
-            <h2>Email History</h2>
-            <ul className="email-list">
-              {emails.map((email: any) => (
-                <li key={email.id}>
-                  <strong>{email.subject}</strong> – {email.status} – {new Date(email.sent_at).toLocaleString()}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {websites.length > 0 && (
-          <section className="card full-width">
-            <h2>Websites</h2>
-            <ul className="website-list">
+        {/* Website Section */}
+        <div className="card">
+          <h2>Website Prototype</h2>
+          {websites.length > 0 ? (
+            <div className="websites-list">
               {websites.map((site: any) => (
-                <li key={site.id}>
-                  <a href={`http://localhost:8000${site.website_url}`} target="_blank" rel="noopener noreferrer">
-                    {site.template_type} – Created {new Date(site.created_at).toLocaleDateString()}
+                <div key={site.id} className="website-item">
+                  <p>Template: {site.template_type}</p>
+                  <a href={`http://localhost:8000${site.website_url}`} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                    👁 View Website
                   </a>
-                </li>
+                </div>
               ))}
-            </ul>
-          </section>
-        )}
+            </div>
+          ) : (
+            <div>
+              <p>No website created yet</p>
+              <button onClick={() => createWebsiteMutation.mutate()} className="btn btn-primary" disabled={createWebsiteMutation.isLoading}>
+                {createWebsiteMutation.isLoading ? '⏳ Creating...' : '🌐 Create Website'}
+              </button>
+            </div>
+          )}
+        </div>
 
-        <section className="card full-width">
-          <h2>Notes</h2>
-          <p>{lead.notes || 'No notes.'}</p>
-        </section>
+        {/* Email Campaigns */}
+        <div className="card">
+          <h2>Email Campaigns</h2>
+          {emails.length > 0 ? (
+            <div className="campaigns-list">
+              {emails.map((campaign: any) => (
+                <div key={campaign.id} className="campaign-item">
+                  <h4>{campaign.subject}</h4>
+                  <p className="body-preview">{campaign.body.substring(0, 100)}...</p>
+                  <p className="status">Status: <span className="badge">{campaign.status}</span></p>
+                  <p className="date">Sent: {new Date(campaign.sent_at).toLocaleDateString()}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <p>No emails sent yet</p>
+              <button onClick={() => sendEmailMutation.mutate()} className="btn btn-primary" disabled={sendEmailMutation.isLoading}>
+                {sendEmailMutation.isLoading ? '⏳ Sending...' : '📧 Send Pitch Email'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

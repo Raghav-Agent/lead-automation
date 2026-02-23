@@ -55,6 +55,7 @@ async def search_leads(
             query.niche,
             query.location,
             query.business_type or query.niche,
+            query.radius_km,
             session
         )
         return {
@@ -65,10 +66,10 @@ async def search_leads(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def _generate_and_save_leads(niche: str, location: str, business_type: str, session: Session):
+async def _generate_and_save_leads(niche: str, location: str, business_type: str, radius_km: int, session: Session):
     """Background task to generate and save leads."""
     try:
-        leads = await lead_searcher.generate_leads(niche, location, business_type)
+        leads = await lead_searcher.generate_leads(niche, location, business_type, radius_km)
         for lead in leads:
             # Avoid duplicates by name+location
             existing = session.query(Lead).filter_by(name=lead.name, location=lead.location).first()

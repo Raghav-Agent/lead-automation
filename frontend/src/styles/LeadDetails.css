@@ -9,12 +9,15 @@
   gap: 1rem;
   margin-bottom: 2rem;
 }
-.back-link {
+.back-btn {
+  background: none;
+  border: none;
   color: #2563eb;
-  text-decoration: none;
   font-weight: 500;
+  cursor: pointer;
+  font-size: 1rem;
 }
-.back-link:hover {
+.back-btn:hover {
   text-decoration: underline;
 }
 .details-grid {
@@ -74,4 +77,23 @@
   text-align: center;
   padding: 3rem;
   color: #64748b;
+}
+.email-list, .website-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.email-list li, .website-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+.email-list li:last-child, .website-list li:last-child {
+  border-bottom: none;
+}
+.email-list a, .website-list a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.email-list a:hover, .website-list a:hover {
+  text-decoration: underline;
 }

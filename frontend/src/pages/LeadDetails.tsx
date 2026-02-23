@@ -1,17 +1,26 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import axios from 'axios'
-import './LeadDetails.css'
+import '../styles/LeadDetails.css'
 
 const API_URL = 'http://localhost:8000/api'
 
 export default function LeadDetails() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const leadId = parseInt(id || '0')
 
   const { data: lead, isLoading } = useQuery(['lead', leadId], () =>
     axios.get(`${API_URL}/leads/${leadId}`).then(res => res.data)
+  )
+
+  const { data: emailsData } = useQuery(['lead-emails', leadId], () =>
+    axios.get(`${API_URL}/emails/${leadId}`).then(res => res.data)
+  )
+
+  const { data: websitesData } = useQuery(['lead-websites', leadId], () =>
+    axios.get(`${API_URL}/websites/${leadId}`).then(res => res.data)
   )
 
   const sendEmailMutation = useMutation(
@@ -37,10 +46,13 @@ export default function LeadDetails() {
   if (isLoading) return <div className="loading">Loading...</div>
   if (!lead) return <div className="not-found">Lead not found</div>
 
+  const emails = emailsData?.campaigns || []
+  const websites = websitesData?.websites || []
+
   return (
     <div className="lead-details">
       <div className="header">
-        <Link to="/" className="back-link">← Back to Dashboard</Link>
+        <button className="back-btn" onClick={() => navigate('/')}>← Back to Dashboard</button>
         <h1>{lead.business_name}</h1>
         <span className={`badge badge-${lead.status}`}>{lead.status}</span>
       </div>
@@ -54,6 +66,8 @@ export default function LeadDetails() {
           <p><strong>Address:</strong> {lead.address || <em>None</em>}</p>
           <p><strong>Location:</strong> {lead.location}</p>
           <p><strong>Website:</strong> {lead.website_url || <em>None</em>}</p>
+          <p><strong>Business Type:</strong> {lead.business_type}</p>
+          <p><strong>Niche:</strong> {lead.niche}</p>
         </section>
 
         <section className="card">
@@ -70,7 +84,7 @@ export default function LeadDetails() {
             ) : (
               <p className="muted">No email address available</p>
             )}
-            {lead.prototype_created && lead.prototype_url ? (
+            {lead.prototype_created && websites.length > 0 ? (
               <a href={`http://localhost:8000${lead.prototype_url}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
                 🌐 View Website
               </a>
@@ -87,6 +101,34 @@ export default function LeadDetails() {
             )}
           </div>
         </section>
+
+        {emails.length > 0 && (
+          <section className="card full-width">
+            <h2>Email History</h2>
+            <ul className="email-list">
+              {emails.map((email: any) => (
+                <li key={email.id}>
+                  <strong>{email.subject}</strong> – {email.status} – {new Date(email.sent_at).toLocaleString()}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {websites.length > 0 && (
+          <section className="card full-width">
+            <h2>Websites</h2>
+            <ul className="website-list">
+              {websites.map((site: any) => (
+                <li key={site.id}>
+                  <a href={`http://localhost:8000${site.website_url}`} target="_blank" rel="noopener noreferrer">
+                    {site.template_type} – Created {new Date(site.created_at).toLocaleDateString()}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section className="card full-width">
           <h2>Notes</h2>
